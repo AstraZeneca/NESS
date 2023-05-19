@@ -173,7 +173,7 @@ typing_extensions==4.3.0
 urllib3==1.26.11
 virtualenv==20.16.7
 wcwidth==0.2.5
-Werkzeug==2.2.2
+Werkzeug==2.2.3
 wrapt==1.15.0
 xxhash==3.2.0
 zict==2.2.0
