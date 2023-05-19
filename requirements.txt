@@ -10,7 +10,7 @@ biotite==0.37.0
 black==22.3.0
 bokeh==2.4.3
 cdt==0.6.0
-certifi==2022.6.15
+certifi==2022.12.7
 cfgv==3.3.1
 charset-normalizer==2.1.0
 class-resolver==0.3.10
