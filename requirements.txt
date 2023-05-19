@@ -145,7 +145,7 @@ skorch==0.12.0
 skrebate==0.62
 slingpy==0.2.12
 sortedcontainers==2.4.0
-sqlparse==0.4.2
+sqlparse==0.4.4
 statsmodels==0.13.5
 stdlib-list==0.8.0
 stevedore==4.0.0
