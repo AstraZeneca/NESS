@@ -27,7 +27,7 @@ th.autograd.set_detect_anomaly(True)
 
 class NESS:
     """
-    Model: Trains an Autoencoder with a Projection network, using NESS framework.
+    Model: Trains a Graph Autoencoder with a Projection network, using NESS framework.
     """
 
     def __init__(self, config):
