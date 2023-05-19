@@ -40,7 +40,7 @@ pipenv shell                   # To activate virtual env
 
 
 # Configuration
-A yaml config file for each dataset (e.g., cora.yaml) must be saved under the "./config/" directory. The name of these yaml files need to match to the name of the dataset.
+A yaml config file for each dataset (e.g., cora.yaml) must be saved under the "./config/" directory. The name of config file needs to match the name of the dataset.
 
 # Training
 You can train the model using any supported dataset. 
@@ -73,7 +73,7 @@ If you use this work in your own studies, and work, you can cite it by using the
 ```
 @Misc{talip_ucar_2023_NESS,
   author =   {Talip Ucar},
-  title =    {{Pytorch implementation of NESS: Node Embeddings from Static Subgraphs}},
+  title =    {{Pytorch implementation of "NESS: Node Embeddings from Static Subgraphs"}},
   howpublished = {\url{https://github.com/AstraZeneca/NESS}},
   month        = May,
   year = {since 2023}
