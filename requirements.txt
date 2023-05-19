@@ -109,7 +109,7 @@ pre-commit-hooks==4.2.0
 prettytable==3.3.0
 progressbar2==4.2.0
 prometheus-flask-exporter==0.20.3
-protobuf==3.20.1
+protobuf==3.20.2
 psutil==5.9.4
 ptyprocess==0.7.0
 pyarrow==11.0.0
