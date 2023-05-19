@@ -31,7 +31,7 @@ class NESS:
     """
 
     def __init__(self, config):
-        """Class to train an autoencoder model with projection in NESS framework.
+        """Class to train an Graph Autoencoder model with projection in NESS framework.
 
         Args:
             config (dict): Configuration dictionary.
