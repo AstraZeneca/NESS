@@ -4,7 +4,7 @@ email: ucabtuc@gmail.com
 
 Description: Utility functions.
 """
-
+import argparse
 import cProfile
 import os
 import pstats
@@ -17,31 +17,50 @@ import yaml
 from numpy.random import seed
 from sklearn import manifold
 from texttable import Texttable
+from typing import Dict, Tuple, Union, List, Any, Callable
 
 
-def set_seed(options):
-    """Sets seed to ensure reproducibility"""
+def set_seed(options: Dict[str, Union[int, str]]) -> None:
+    """
+    Sets seed to ensure reproducibility.
+
+    Parameters
+    ----------
+    options : dict
+        Dictionary with the seed option. The key is "seed".
+    """
     seed(options["seed"])
     np.random.seed(options["seed"])
     python_random.seed(options["seed"])
     torch.manual_seed(options["seed"])
 
 
-def create_dir(dir_path):
-    """Creates a directory if it does not exist"""
+def create_dir(dir_path: str) -> None:
+    """
+    Creates a directory if it does not exist.
+
+    Parameters
+    ----------
+    dir_path : str
+        The path to the directory.
+    """
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
 
-def set_dirs(config):
-    """It sets up directory that will be used to load processed_data and src as well as saving results.
+def set_dirs(config: Dict[str, Any]) -> None:
+    """
+    It sets up directory that will be used to load processed_data and src as well as saving results.
+
     Directory structure example:
         results > dataset > training  -------> > model
                           > evaluation         > plots
                                                > loss
-    Args:
-        config (dict): Dictionary that defines options to use
 
+    Parameters
+    ----------
+    config : dict
+        Dictionary that defines options to use.
     """
     # Set main results directory using database name. Exp:  processed_data/dpp19
     paths = config["paths"]
@@ -67,16 +86,42 @@ def set_dirs(config):
     print("Directories are set.")
 
 
-def make_dir(directory_path, new_folder_name):
-    """Creates an expected directory if it does not exist"""
+def make_dir(directory_path: str, new_folder_name: str) -> str:
+    """
+    Creates an expected directory if it does not exist.
+
+    Parameters
+    ----------
+    directory_path : str
+        Path to the directory.
+    new_folder_name : str
+        Name of the new folder.
+
+    Returns
+    -------
+    str
+        Path to the created directory.
+    """
     directory_path = os.path.join(directory_path, new_folder_name)
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
     return directory_path
 
 
-def get_runtime_and_model_config(args):
-    """Returns runtime and model/dataset specific config file"""
+def get_runtime_and_model_config(args: argparse.Namespace) -> Dict[str, Any]:
+    """
+    Returns runtime and model/dataset specific config file.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Command line arguments.
+
+    Returns
+    -------
+    dict
+        Dictionary with the configuration.
+    """
     try:
         with open(f"./config/{args.dataset}.yaml", "r") as file:
             config = yaml.safe_load(file)
@@ -90,8 +135,22 @@ def get_runtime_and_model_config(args):
     return config
 
 
-def update_config_with_model_dims(dataset, config):
-    """Updates options by adding the dimension of input features as the dimension of first hidden layer of the model"""
+def update_config_with_model_dims(dataset: Any, config: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Updates options by adding the dimension of input features as the dimension of first hidden layer of the model.
+
+    Parameters
+    ----------
+    dataset : Any
+        Dataset object.
+    config : dict
+        Dictionary with the configuration.
+
+    Returns
+    -------
+    dict
+        Updated dictionary with the configuration.
+    """
     # Get data
     train_data = dataset.train_data[-1]
     # Get the number of features
@@ -101,8 +160,17 @@ def update_config_with_model_dims(dataset, config):
     return config
 
 
-def run_with_profiler(main_fn, config):
-    """Runs function with profile to see how much time each step takes."""
+def run_with_profiler(main_fn: Callable, config: Dict[str, Any]) -> None:
+    """
+    Runs function with profile to see how much time each step takes.
+
+    Parameters
+    ----------
+    main_fn : Callable
+        Main function to profile.
+    config : dict
+        Dictionary with the configuration.
+    """
     profiler = cProfile.Profile()
     profiler.enable()
     # Run the main
@@ -112,8 +180,15 @@ def run_with_profiler(main_fn, config):
     stats.print_stats()
 
 
-def print_config(args):
-    """Prints out options and arguments"""
+def print_config(args: Union[Dict[str, Any], argparse.Namespace]) -> None:
+    """
+    Prints out options and arguments.
+
+    Parameters
+    ----------
+    args : dict or argparse.Namespace
+        Configuration options either as a dictionary or argparse Namespace.
+    """
     # Yaml config is a dictionary while parser arguments is an object. Use vars() only on parser arguments.
     if type(args) is not dict:
         args = vars(args)

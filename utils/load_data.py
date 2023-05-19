@@ -19,19 +19,26 @@ from torch_geometric.data import Data
 from torch_geometric.datasets import Planetoid, WebKB, WikipediaNetwork
 from torch_geometric.nn import GAE, VGAE, GCNConv
 from torch_geometric.seed import seed_everything as th_seed
+from typing import Any, Dict, List, Tuple
 
 
-class GraphLoader(object):
-    """ Data loader """
+class GraphLoader:
+    """
+    Data loader class for graph data.
+    """
 
-    def __init__(self, config, dataset_name, kwargs={}):
-        """Pytorch data loader
+    def __init__(self, config: Dict[str, Any], dataset_name: str, kwargs: Dict[str, Any] = {}) -> None:
+        """
+        Initializes the GraphLoader.
 
-        Args:
-            config (dict): Dictionary containing options and arguments.
-            dataset_name (str): Name of the dataset to load
-            kwargs (dict): Dictionary for additional parameters if needed
-
+        Parameters
+        ----------
+        config : Dict[str, Any]
+            Dictionary containing options and arguments.
+        dataset_name : str
+            Name of the dataset to load.
+        kwargs : Dict[str, Any], optional
+            Dictionary for additional parameters if needed, by default {}.
         """
         # Get config
         self.config = config
@@ -45,8 +52,22 @@ class GraphLoader(object):
         self.train_data, self.validation_data, self.test_data = self.get_dataset(dataset_name, file_path)        
         
 
-    def get_dataset(self, dataset_name, file_path):
-        """Returns training, validation, and test datasets"""
+    def get_dataset(self, dataset_name: str, file_path: str) -> Tuple[Data, Data, Data]:
+        """
+        Returns the training, validation, and test datasets.
+
+        Parameters
+        ----------
+        dataset_name : str
+            Name of the dataset to load.
+        file_path : str
+            Path to the dataset.
+
+        Returns
+        -------
+        Tuple[Data, Data, Data]
+            Training, validation, and test datasets.
+        """
 
         # Initialize Graph dataset class
         graph_dataset = GraphDataset(self.config, datadir=file_path, dataset_name=dataset_name)
@@ -61,7 +82,20 @@ class GraphLoader(object):
         return train_data, val_data, test_data
     
     
-    def generate_subgraphs(self, train_data):
+    def generate_subgraphs(self, train_data: Data) -> List[Data]:
+        """
+        Generates subgraphs from the training data.
+
+        Parameters
+        ----------
+        train_data : Data
+            Training data containing the graph.
+
+        Returns
+        -------
+        List[Data]
+            List of subgraphs generated from the training data.
+        """
         # Initialize list to hold subgraphs
         subgraphs = [train_data]
 
@@ -114,6 +148,7 @@ class GraphLoader(object):
         
         # Return all subgraphs and original larger graph
         return subgraphs
+
     
 def get_transform(options):
     """Splits data to train, validation and test, and moves them to the device"""
@@ -130,17 +165,24 @@ def get_transform(options):
     return transform
 
 
-class GraphDataset(object):
-    def __init__(self, config, datadir, dataset_name):
-        """Dataset class for graph data format.
+class GraphDataset:
+    """
+    Dataset class for graph data format.
+    """
 
-        Args:
-            config (dict): Dictionary containing options and arguments.
-            datadir (str): The path to the data directory
-            dataset_name (str): Name of the dataset to load
-            
+    def __init__(self, config: Dict[str, Any], datadir: str, dataset_name: str) -> None:
         """
+        Initializes the GraphDataset.
 
+        Parameters
+        ----------
+        config : Dict[str, Any]
+            Dictionary containing options and arguments.
+        datadir : str
+            The path to the data directory.
+        dataset_name : str
+            Name of the dataset to load.
+        """
         self.config = config
         self.paths = config["paths"]
         self.dataset_name = dataset_name
@@ -148,9 +190,15 @@ class GraphDataset(object):
         self.transform = get_transform(config)
 
         
-    def _load_data(self):
-        """Loads one of many available datasets, and returns features and labels"""
+    def _load_data(self) -> Tuple[Data, Data, Data]:
+        """
+        Loads one of many available datasets and returns features and labels.
 
+        Returns
+        -------
+        Tuple[Data, Data, Data]
+            Training, validation, and test datasets.
+        """
         if self.dataset_name.lower() in ['cora', 'citeseer', 'pubmed']:
             # Get the dataset
             dataset = Planetoid(self.data_path, self.dataset_name, split="random", transform = self.transform)

@@ -6,15 +6,23 @@ Description: Plot utilities. Used to plot losses recorded during training.
 """
 
 import matplotlib.pyplot as plt
+from typing import Dict, List
 
 
-def save_loss_plot(losses, plots_path):
-    """Saves loss plot
+def save_loss_plot(losses: Dict[str, List[float]], plots_path: str) -> None:
+    """
+    Saves loss plot. 
 
-    Args:
-        losses (dict): A dictionary contains list of losses
-        plots_path (str): Path to use when saving loss plot
+    If validation loss is present, the plot includes both training and validation loss; otherwise, it includes only
+    the training loss.
 
+    Parameters
+    ----------
+    losses : dict
+        A dictionary contains lists of losses. The keys are "tloss_e" for training loss and "vloss_e" for validation 
+        loss. The values are lists of recorded loss values.
+    plots_path : str
+        Path to save the loss plot.
     """
     x_axis = list(range(len(losses["tloss_e"])))
     plt.plot(x_axis, losses["tloss_e"], c='r', label="Training")
@@ -36,13 +44,17 @@ def save_loss_plot(losses, plots_path):
     plt.clf()
     
 
-def save_auc_plot(summary, plots_path):
-    """Saves AUC plot
+def save_auc_plot(summary: Dict[str, List[float]], plots_path: str) -> None:
+    """
+    Saves AUC (Area Under the ROC Curve) plot during training.
 
-    Args:
-        summary (dict): A dictionary contains list of loss and auc values stored during training
-        plots_path (str): Path to use when saving loss plot
-
+    Parameters
+    ----------
+    summary : dict
+        A dictionary contains list of loss and AUC values stored during training. The key for AUC values is 
+        "val_auc".
+    plots_path : str
+        Path to save the AUC plot.
     """
     if len(summary["val_auc"]) > 1:
         

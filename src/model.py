@@ -12,30 +12,36 @@ import os
 
 import numpy as np
 import pandas as pd
-import torch as th
+import torch
+from torch.utils.data import DataLoader
 import torch_geometric.transforms as T
 from torch_geometric.seed import seed_everything as th_seed
 from torch_geometric.utils import dropout_adj
+from torch_geometric.data import Data
+
 from tqdm import tqdm
+from typing import Dict, List, Union, Tuple, Optional
 
 from utils.loss_functions import JointLoss
 from utils.model_plot import save_auc_plot, save_loss_plot
 from utils.model_utils import GAEWrapper
 from utils.utils import set_dirs, set_seed
 
-th.autograd.set_detect_anomaly(True)
+torch.autograd.set_detect_anomaly(True)
 
 class NESS:
     """
     Model: Trains a Graph Autoencoder with a Projection network, using NESS framework.
     """
 
-    def __init__(self, config):
-        """Class to train an Graph Autoencoder model with projection in NESS framework.
+    def __init__(self, config: Dict):
+        """Initializes the NESS class.
 
-        Args:
-            config (dict): Configuration dictionary.
-
+        Parameters
+        ----------
+        config : dict
+            Configuration dictionary with parameters for training a Graph Autoencoder 
+            using NESS framework.
         """
         # Get config
         self.config = config
@@ -59,8 +65,12 @@ class NESS:
         # Print out model architecture
         self.print_model_summary()
 
-    def set_autoencoder(self):
-        """Sets up the autoencoder model, optimizer, and loss"""    
+    def set_autoencoder(self) -> None:
+        """Sets up the autoencoder model, optimizer, and loss.
+        
+        This function is responsible for initializing the Graph Autoencoder, setting up 
+        the optimizer, and defining the joint loss.
+        """   
         # Instantiate the model for the text Autoencoder
         self.autoencoder = GAEWrapper(self.config)
         # Add the model and its name to a list to save, and load in the future
@@ -76,17 +86,34 @@ class NESS:
         # Add items to summary to be used for reporting later
         self.summary.update({"recon_loss": []})
 
-    def set_parallelism(self, model):
-        """Sets up parallelism in training."""
+    def set_parallelism(self, model) -> None:
+        """Sets up parallelism in training if multiple GPUs are available.
+
+        Parameters
+        ----------
+        model : torch.nn.Module
+            The model for which the parallelism is to be set.
+
+        Returns
+        -------
+        model : torch.nn.Module
+            The input model wrapped in DataParallel if multiple GPUs are available.
+        """
         # If we are using GPU, and if there are multiple GPUs, parallelize training
-        if th.cuda.is_available() and th.cuda.device_count() > 1:
-            print(th.cuda.device_count(), " GPUs will be used!")
-            model = th.nn.DataParallel(model)
+        if torch.cuda.is_available() and torch.cuda.device_count() > 1:
+            print(torch.cuda.device_count(), " GPUs will be used!")
+            model = torch.nn.DataParallel(model)
         return model
 
-    def fit(self, data_loader):
-        """Fits model to the data"""
+    def fit(self, data_loader: DataLoader) -> None:
+        """Fits model to the data.
 
+        Parameters
+        ----------
+        data_loader : DataLoader
+            The DataLoader object that provides the data.
+        """
+        
         # Get data loaders
         train_data = data_loader.train_data
         validation_data = data_loader.validation_data
@@ -147,7 +174,17 @@ class NESS:
         loss_df.to_csv(self._loss_path + "/losses.csv")
         
             
-    def run_validation(self, train_data, validation_data):
+    def run_validation(self, train_data: Union[List, torch.Tensor], validation_data: Union[List, torch.Tensor]) -> None:
+        """Runs validation on the trained model and save weights if validation AUC improves.
+
+        Parameters
+        ----------
+        train_data : List or torch.Tensor
+            The training dataset.
+
+        validation_data : List or torch.Tensor
+            The validation dataset.
+        """
         
         # Set the evaluation mode
         self.set_mode(mode="evaluation")
@@ -181,13 +218,13 @@ class NESS:
         self.set_mode(mode="training")
     
 
-    def update_autoencoder(self, subgraphs):
-        """Updates autoencoder model using combinations of subgraphs of features
+    def update_autoencoder(self, subgraphs: List[Data]) -> None:
+        """Updates autoencoder model.
 
-        Args:
-            feature_label_batch_list (list): A list that contains combinations of pairs of subgraphs
-            Xorig (torch.tensor): Ground truth data used to generate subgraphs
-
+        Parameters
+        ----------
+        subgraphs : list of Data
+            A list that contains subgraphs + original training graph.
         """
         total_loss, contrastive_loss, recon_loss, zrecon_loss = [], [], [], []
         
@@ -283,18 +320,19 @@ class NESS:
         gc.collect()
 
 
+    def get_combinations_of_subgraphs(self, z_list: List[Data]) -> List[Tuple[Data, Data]]:
+        """Generates a list of combinations of subgraphs from the list of subgraphs.
 
-    def get_combinations_of_subgraphs(self, z_list):
-        """Generate a list of combinations of subgraphs from the list of subgraphs
+        Parameters
+        ----------
+        z_list : list of Data
+            List of subgraphs e.g. [z1, z2, z3, ...]
 
-        Args:
-            z_list (list): List of subgraphs e.g. [z1, z2, z3, ...]
-        
-        Returns:
-            (list): A list of combinations of subgraphs e.g. [(z1, z2), (z1, z3), ...]
-
-        """        
-                            
+        Returns
+        -------
+        list of tuple
+            A list of combinations of subgraphs e.g. [(z1, z2), (z1, z3), ...]
+        """                            
         # Compute combinations of subgraphs [(z1, z2), (z1, z3)...]
         subgraph_combinations = list(itertools.combinations(z_list, 2))
         # List to store the concatenated subgraphs
@@ -303,7 +341,7 @@ class NESS:
         # Go through combinations
         for (zi, zj) in subgraph_combinations:
             # Concatenate xi, and xj, and turn it into a tensor
-            z = th.cat((zi, zj), dim=0)
+            z = torch.cat((zi, zj), dim=0)
             
             # Add it to the list
             concatenated_subgraphs_list.append(z)
@@ -311,22 +349,25 @@ class NESS:
         # Return the list of combination of subgraphs
         return concatenated_subgraphs_list
     
-    def clean_up_memory(self, losses):
-        """Deletes losses with attached graph, and cleans up memory"""
+    def clean_up_memory(self, losses: List) -> None:
+        """Deletes losses with attached graph, and cleans up memory.
+
+        Parameters
+        ----------
+        losses : list
+            List of loss values to be deleted.
+        """
         for loss in losses: del loss
         gc.collect()
 
-    def process_batch(self, xi, xj):
-        """Concatenates two transformed inputs into one, and moves the data to the device as tensor"""
-        # Combine xi and xj into a single batch
-        Xbatch = np.concatenate((xi, xj), axis=0)
-        # Convert the batch to tensor and move it to where the model is
-        Xbatch = self._tensor(Xbatch)
-        # Return batches
-        return Xbatch
+    def update_log(self, epoch: int) -> None:
+        """Updates the messages displayed during training and evaluation.
 
-    def update_log(self, epoch):
-        """Updates the messages displayed during training and evaluation"""
+        Parameters
+        ----------
+        epoch : int
+            The current epoch number.
+        """
         # For the first epoch, add losses for batches since we still don't have loss for the epoch
         if epoch < 1:
             description = f"Epoch:[{epoch - 1}], Total loss:{self.metrics['tloss_e'][-1]:.4f}"
@@ -347,33 +388,50 @@ class NESS:
         # Update the displayed message
         print(description)
 
+    def set_mode(self, mode: str = "training") -> None:
+        """Sets the mode of the models, either as .train(), or .eval().
 
-    def set_mode(self, mode="training"):
-        """Sets the mode of the models, either as .train(), or .eval()"""
+        Parameters
+        ----------
+        mode : str, optional
+            Mode in which to set the models, by default "training".
+        """
         for _, model in self.model_dict.items():
             model.train() if mode == "training" else model.eval()
 
-    def save_weights(self, with_epoch = False):
-        """Used to save weights."""
+    def save_weights(self, with_epoch: bool = False) -> None:
+        """Saves weights of the models.
+
+        Parameters
+        ----------
+        with_epoch : bool, optional
+            If True, includes the epoch number in the filename, by default False.
+        """
         for model_name in self.model_dict:
             
             # Check if we want to save the model at a specific epoch
             file_name = model_name + "_" + str(self.epoch) if with_epoch else model_name
             
             # Save the model
-            th.save(self.model_dict[model_name], self._model_path + "/" + file_name + ".pt")
+            torch.save(self.model_dict[model_name], self._model_path + "/" + file_name + ".pt")
         
         print("Done with saving models.")
 
-    def load_models(self, epoch = None):
-        """Used to load weights saved at the end of the training."""
+    def load_models(self, epoch: Optional[int] = None) -> None:
+        """Loads weights saved at the end of the training.
+
+        Parameters
+        ----------
+        epoch : int, optional
+            If provided, loads the weights saved at the specified epoch, by default None.
+        """
         for model_name in self.model_dict:
             
             # Check if we want to load the model saved at a specific epoch
             file_name = model_name + "_" + str(epoch) if epoch is not None else model_name
 
             # Load the model
-            model = th.load(self._model_path + "/" + file_name + ".pt", map_location=self.device)
+            model = torch.load(self._model_path + "/" + file_name + ".pt", map_location=self.device)
             
             # Register model to the class
             setattr(self, model_name, model.eval())
@@ -381,7 +439,7 @@ class NESS:
         
         print("Done with loading models.")
 
-    def print_model_summary(self):
+    def print_model_summary(self) -> None:
         """Displays model architectures as a sanity check to see if the models are constructed correctly."""
         # Summary of the model
         description = f"{40 * '-'}Summary of the models:{40 * '-'}\n"
@@ -390,14 +448,19 @@ class NESS:
         # Print model architecture
         print(description)
 
-    def _update_model(self, loss, optimizer, retain_graph=True):
-        """Does backprop, and updates the model parameters
+    def _update_model(self, loss: torch.Tensor, optimizer: torch.optim.Optimizer, retain_graph: bool = True) -> None:
+        """Does backpropagation and updates the model parameters.
 
-        Args:
-            loss (): Loss containing computational graph
-            optimizer (torch.optim): Optimizer used during training
-            retain_graph (bool): If True, retains graph. Otherwise, it does not.
+        Parameters
+        ----------
+        loss : torch.Tensor
+            Loss containing computational graph.
 
+        optimizer : torch.optim.Optimizer
+            Optimizer used during training.
+
+        retain_graph : bool, optional
+            If True, retains the computational graph after backpropagation, by default True.
         """
         # Reset optimizer
         optimizer.zero_grad()
@@ -406,13 +469,13 @@ class NESS:
         # Update weights
         optimizer.step()
 
-    def _set_scheduler(self):
-        """Sets a scheduler for learning rate of autoencoder"""
+    def _set_scheduler(self) -> None:
+        """Sets a scheduler for the learning rate of the autoencoder."""
         # Set scheduler (Its use will be optional)
-        self.scheduler = th.optim.lr_scheduler.StepLR(self.optimizer_ae, step_size=1, gamma=0.99)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer_ae, step_size=1, gamma=0.99)
 
-    def _set_paths(self):
-        """ Sets paths to bse used for saving results at the end of the training"""
+    def _set_paths(self) -> None:
+        """Sets paths to be used for saving results at the end of the training."""
         # Top results directory
         self._results_path = os.path.join(self.config["paths"]["results"], self.config["experiment"])
         # Directory to save model
@@ -422,12 +485,20 @@ class NESS:
         # Directory to save losses as csv file
         self._loss_path = os.path.join(self._results_path, "training", "loss")
 
-    def _adam(self, params, lr=1e-4):
-        """Sets up AdamW optimizer using model params"""
-        return th.optim.AdamW(itertools.chain(*params), lr=lr, betas=(0.9, 0.999), eps=1e-07)
+    def _adam(self, params: Union[List, Tuple], lr: float = 1e-4) -> torch.optim.AdamW:
+        """Sets up AdamW optimizer using model parameters.
 
-    def _tensor(self, data):
-        """Turns numpy arrays to torch tensors"""
-        if type(data).__module__ == np.__name__:
-            data = th.from_numpy(data)
-        return data.to(self.device).float()
+        Parameters
+        ----------
+        params : list or tuple
+            Parameters of the models to optimize.
+
+        lr : float, optional
+            Learning rate, by default 1e-4.
+
+        Returns
+        -------
+        torch.optim.AdamW
+            AdamW optimizer.
+        """
+        return torch.optim.AdamW(itertools.chain(*params), lr=lr, betas=(0.9, 0.999), eps=1e-07)

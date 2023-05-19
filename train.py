@@ -13,19 +13,29 @@ import pandas as pd
 import seaborn as sns
 
 from src.model import NESS
+
+from typing import Dict
+from torch.utils.data import IterableDataset
+
 from utils.arguments import get_arguments, get_config, print_config_summary
 from utils.load_data import GraphLoader
 from utils.utils import set_dirs, update_config_with_model_dims
 
 
-def train(config, data_loader, save_weights=True):
+def train(config: Dict, data_loader: IterableDataset, save_weights: bool = True) -> None:
     """
-    :param dict config: Dictionary containing options.
-    :param IterableDataset data_loader: Pytorch data loader.
-    :param bool save_weights: Saves model if True.
-    :return:
+    Trains the model using provided configuration and data loader.
 
-    Utility function for saving on one training fold.
+    Parameters
+    ----------
+    config : dict
+        Dictionary containing options.
+
+    data_loader : IterableDataset
+        Pytorch data loader used for training the model.
+
+    save_weights : bool, optional
+        If True, the trained model is saved. By default, it's True.
     """
     # Instantiate model
     model = NESS(config)
@@ -42,7 +52,16 @@ def train(config, data_loader, save_weights=True):
     return model.test_auc, model.test_ap
 
 
-def main(config):
+def main(config: Dict) -> None:
+    """
+    The main function that starts the execution of the program. Takes the 
+    configuration dictionary as input.
+
+    Parameters
+    ----------
+    config : dict
+        Dictionary containing options.
+    """
     # Ser directories (or create if they don't exist)
     set_dirs(config)
     # Get data loader for first dataset.

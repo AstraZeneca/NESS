@@ -10,7 +10,7 @@ import pprint
 from argparse import ArgumentParser
 from os.path import abspath, dirname
 
-import torch as th
+import torch
 
 from utils.utils import get_runtime_and_model_config, print_config
 
@@ -51,14 +51,13 @@ def get_config(args):
     # Load runtime config from config folder: ./config/
     config = get_runtime_and_model_config(args)
     # Define which device to use: GPU or CPU
-    config["device"] = th.device('cuda:'+args.device_number if th.cuda.is_available() and args.gpu else 'cpu')
+    config["device"] = torch.device('cuda:'+args.device_number if torch.cuda.is_available() and args.gpu else 'cpu')
     # Model at specific epoch
     config["model_at_epoch"] = args.model_at_epoch
     # Indicate which device is being used
     print(f"Device being used is {config['device']}")
     # Return
     return config
-
 
 def print_config_summary(config, args=None):
     """Prints out summary of options and arguments used"""
