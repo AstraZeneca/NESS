@@ -2,7 +2,7 @@
 Author: Talip Ucar
 Email: ucabtuc@gmail.com
 
-Main function for training for GNN-based encoder using NESS.
+Main function for training of a GNN-based encoder using NESS.
 """
 
 import copy
