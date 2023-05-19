@@ -1,0 +1,45 @@
+---
+seed: 57
+
+# Data and results paths
+paths:                                    # Paths to include
+    data: ./data/                         # Where the data is stored.
+    results: ./results/                   # Where the results such as trained model, and plots will be saved.
+
+# Define the number of subgraphs
+full_graph: false                    # Whether to reconstruct the entire training graph, or subgraph. Default: false
+n_subgraphs: 4                       # Number of subgraphs
+
+# Parameters for Encoder architecture
+encoder_type: GNAE              # GNAE (default). Other options: GCN, GAT, Linear, ARGA. It also supports their variational counterpart: VGNAE, VGCN, VariationalLinear, ARGVA
+z_dim: 32                       # Hidden dimension used for encoders and linear layers
+
+# Batchnorm & Dropout
+isBatchNorm: false                # Set True to use BatchNorm layer
+isDropout: false                  # Set True to use Dropout layer
+
+# Hyper-parameters for training
+learning_rate: 0.01              # Learning rate for training
+dropout_rate: 0.5                 # Set dropout rate if Dropout is being used
+tau: 0.1                          # temperature parameter used in NTXentLoss
+batch_size: 128                   # NOT USED
+epochs: 500                      # Number of epochs to use for training
+scheduler: false                  # If true, it will use scheduler for learning rate
+validate: true
+nth_epoch: 10                      # Compute validation loss in every nth_epoch
+patience: 3                      # Patience criteria to stop the training. Range: [3,15]
+
+# Parameters for contrastive learning
+contrastive_loss: false
+cosine_similarity: false          # If True, use cosine similarity in NTXentLoss. Else, use dot product.
+p_norm: 2                         # p-value used for normalization. p=2 for L2 norm, p=1 for L1 norm and so on.
+normalize: true
+
+# Noise parameters
+add_noise: true
+p_noise: 0.2
+
+# Type of aggregation / pooling for latent variables of subgraphs
+aggregation: mean                 # options:  mean (default). TODO: Add more options
+
+
