@@ -1,4 +1,4 @@
-# NESS: 
+# NESS: Node Embeddings from Static Subgraphs
 ##### Author: Talip Ucar (ucabtuc@gmail.com)
 
 
