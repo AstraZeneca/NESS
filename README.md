@@ -14,7 +14,7 @@
 
 
 # Model
-![NESS](./assets/NESS.pdf)
+![NESS](./assets/NESS.png)
 
 # Datasets
 Following datasets are supported:
