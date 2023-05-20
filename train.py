@@ -91,6 +91,6 @@ if __name__ == "__main__":
     print_config_summary(config, args)
 
     # Run the main
-    test_auc,test_ap = main(config)
+    test_auc, test_ap = main(config)
     
     print(f"Test AUC: {test_auc}, AP: {test_ap}")

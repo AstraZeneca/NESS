@@ -16,6 +16,14 @@
 # Model
 ![NESS](./assets/NESS.png)
 
+Supports the following encoder types and their variational counterparts: 
+
+- GNAE, VGNAE
+- GCN, VGCN
+- GAT
+- Linear, VariationalLinear
+- ARGA, ARGVA
+
 # Datasets
 Following datasets are supported:
 
