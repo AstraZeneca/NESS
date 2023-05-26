@@ -99,10 +99,10 @@ class GraphLoader:
         # Initialize list to hold subgraphs
         subgraphs = [train_data]
 
-        # Check if we are generating subsets from the graph
+        # Check if we are generating subgraphs from the graph. If False, we are in standard GAE mode
         if self.config["n_subgraphs"] > 1:
                 
-            # Generate subgraphs - TODO method to generate sub-graphs
+            # Generate subgraphs
             for i in range(self.config["n_subgraphs"]):
                 
                 # Change random seed
@@ -110,7 +110,7 @@ class GraphLoader:
                 
                 partition = 1.0/(self.config["n_subgraphs"]-i)
                 
-                # For the last subset, get 95% of the remaining graph. if num_val=1.0, RandomLinkSplit will raise error
+                # For the last subgraph, get 95% of the remaining graph. if num_val=1.0, RandomLinkSplit will raise error
                 if partition == 1.0:
                     partition = 0.95
                     
@@ -128,7 +128,7 @@ class GraphLoader:
                 pos_swapped = train_subgraph.pos_edge_label_index[[1,0],:] 
                 train_subgraph.edge_index = torch.cat((train_subgraph.pos_edge_label_index, pos_swapped), dim=1)
                 
-                # Remove negative edge attributes to force PyG to sample negative samples during training
+                # Remove negative edge attributes. We want to sample negative samples during training
                 # Masks are also not needed
                 if hasattr(train_subgraph, "neg_edge_label_index"):
                     delattr(train_subgraph, "neg_edge_label_index")

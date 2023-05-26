@@ -1,6 +1,10 @@
 # NESS: Node Embeddings from Static Subgraphs
 ##### Author: Talip Ucar (ucabtuc@gmail.com)
 
+**Paper:** [NESS: Node Embeddings from Static Subgraphs](https://arxiv.org/pdf/2303.08958.pdf)
+
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/ness-learning-node-embeddings-from-static/link-prediction-on-cora)](https://paperswithcode.com/sota/link-prediction-on-cora?p=ness-learning-node-embeddings-from-static) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/ness-learning-node-embeddings-from-static/link-prediction-on-citeseer)](https://paperswithcode.com/sota/link-prediction-on-citeseer?p=ness-learning-node-embeddings-from-static) [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/ness-learning-node-embeddings-from-static/link-prediction-on-pubmed)](https://paperswithcode.com/sota/link-prediction-on-pubmed?p=ness-learning-node-embeddings-from-static)
+
 
 # Table of Contents:
 
