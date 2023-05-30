@@ -136,14 +136,8 @@ class NESS:
         # Start joint training of Autoencoder with Projection network
         for epoch in range(self.config["epochs"]):
             
-            if self.patient == self.config["patience"]:
-                break
-            
             # Keep a record of epoch
             self.epoch = epoch
-            
-            # Change random seed back to original
-            th_seed(self.config["seed"])
             
             # 0 - Update Autoencoder
             self.update_autoencoder(train_data)
@@ -159,6 +153,10 @@ class NESS:
 
             # 4 - Change learning rate if scheduler==True
             _ = self.scheduler.step() if self.config["scheduler"] else None
+            
+            # 5 - Stop training if we run out of patience
+            if self.patient == self.config["patience"]:
+                break
             
         # Get the test performance
         self.test_auc, self.test_ap = self.autoencoder.single_test(train_data, test_data)
